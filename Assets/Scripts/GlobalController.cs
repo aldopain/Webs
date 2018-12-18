@@ -21,23 +21,42 @@ public class GlobalController : MonoBehaviour {
 		setChoser.ClearOptions();
 	}
 
+	public void SavePattern () {
+		if (currentPattern != null) {
+
+		}
+	}
+
 	void ChooseSet (string s) {
 		var ps = FindSet (s);
 		if (ps != null) {
-			print (s);
 			currentSet = ps;
 			patternChoser.ClearOptions ();
 			var tmp = new List<string>();
-			print (ps.patterns.Count);
 			for (int i = 0; i < ps.patterns.Count; i++) {
 				tmp.Add(ps.patterns[i].name);
 			}
 			patternChoser.AddOptions (tmp);
+			if (currentSet.patterns.Count > 0)
+				currentPattern = currentSet.patterns[0];
+			else
+				currentPattern = null;
 		}
 	}
 
 	public void ChooseSet () {
 		ChooseSet (setChoser.options[setChoser.value].text);
+	}
+
+	void ChoosePattern (string s) {
+		var p = FindPattern (s);
+		if (p != null)
+			currentPattern = p;
+		print (currentPattern.name);
+	}
+
+	public void ChoosePattern () {
+		ChoosePattern (patternChoser.options[patternChoser.value].text);
 	}
 	
 	void AddSet (string s) {
@@ -55,13 +74,52 @@ public class GlobalController : MonoBehaviour {
 		return null;
 	}
 
+	Pattern FindPattern (string s) {
+		if (currentSet != null)
+			for (int i = 0; i < currentSet.patterns.Count; i++)
+				if (currentSet.patterns[i].name.Equals(s))
+					return currentSet.patterns[i];
+		return null;
+	}
+
+	public void RemovePattern () {
+		if (currentSet != null) {
+			var n = currentSet.name;
+			patternSets.Remove (currentSet);
+			if (patternSets.Count > 0) {
+				var ind = -1;
+				for (int i = 0; i < setChoser.options.Count; i++)
+					if (setChoser.options[i].text.Equals (n)) {
+						ind = i;
+						break;
+					}
+				if (ind != -1) setChoser.options.RemoveAt (ind);
+				setChoser.value = 0;
+				ChooseSet (patternSets[0].name);
+			} else {
+				setChoser.ClearOptions();
+				patternChoser.ClearOptions();
+			}
+		}
+	}
+
 	public void RemoveSet () {
+		var n = currentSet.name;
 		patternSets.Remove (currentSet);
 		if (patternSets.Count > 0) {
+			var ind = -1;
+			for (int i = 0; i < setChoser.options.Count; i++)
+				if (setChoser.options[i].text.Equals (n)) {
+					ind = i;
+					break;
+				}
+			if (ind != -1) setChoser.options.RemoveAt (ind);
 			setChoser.value = 0;
 			ChooseSet (patternSets[0].name);
-		} else
+		} else {
 			setChoser.ClearOptions();
+			patternChoser.ClearOptions();
+		}
 	}
 
 	public void AddSet () {
