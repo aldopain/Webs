@@ -5,30 +5,44 @@ using UnityEngine.UI;
 
 public class GlobalController : MonoBehaviour {
 
-	List<PatternSet> patternSets;
+	public List<PatternSet> patternSets;
+	PatternSet currentSet;
+	public Pattern currentPattern;
+	DatabaseManager databaseManager;
+
 	public Dropdown patternChoser;
 	public Dropdown setChoser;
-	PatternSet currentSet;
-	Pattern currentPattern;
-
+	public PatternController view;
 	public InputField newSetName;
 	public InputField newPatternName;
 
 	// Use this for initialization
 	void Start () {
 		patternSets = new List<PatternSet>();
+		patternSets.AddRange (Saver.ReadPatternSets());
 		patternChoser.ClearOptions();
 		setChoser.ClearOptions();
+		var patBuf = new List <string>();
+		var setBuf = new List <string>();
+		foreach (var ps in patternSets)
+			AddSetToChoser (ps.name);
+		ChooseSet (patternSets[0]);
+		databaseManager = new DatabaseManager ("test");
 	}
 
 	public void SavePattern () {
 		if (currentPattern != null) {
-
+			currentSet.FindByName (currentPattern.name).vector = view.ToVector ();
 		}
 	}
 
-	void ChooseSet (string s) {
-		var ps = FindSet (s);
+	public void SavePatternSet () {
+		if (currentSet != null) {
+			Saver.InsertPatternSet (currentSet);
+		}
+	}
+
+	void ChooseSet (PatternSet ps) {
 		if (ps != null) {
 			currentSet = ps;
 			patternChoser.ClearOptions ();
@@ -44,6 +58,11 @@ public class GlobalController : MonoBehaviour {
 		}
 	}
 
+	void ChooseSet (string s) {
+		var ps = FindSet (s);
+		ChooseSet (ps);
+	}
+
 	public void ChooseSet () {
 		ChooseSet (setChoser.options[setChoser.value].text);
 	}
@@ -52,7 +71,6 @@ public class GlobalController : MonoBehaviour {
 		var p = FindPattern (s);
 		if (p != null)
 			currentPattern = p;
-		print (currentPattern.name);
 	}
 
 	public void ChoosePattern () {
@@ -122,17 +140,27 @@ public class GlobalController : MonoBehaviour {
 		}
 	}
 
+	void AddSetToChoser (string s) {
+		var tmp = new List<string>();
+		tmp.Add (s);
+		setChoser.AddOptions(tmp);
+	}
+
 	public void AddSet () {
 		if (newSetName.text != "") {
 			AddSet (newSetName.text);
-			var tmp = new List<string>();
-			tmp.Add (newSetName.text);
-			setChoser.AddOptions(tmp);
+			AddSetToChoser (newSetName.text);
 			newSetName.text = "";
 		}
 		if (patternSets.Count == 1)
 			currentSet = patternSets[0];
 	}
+
+	// void AddSet (string s) {
+	// 	if (s != null) {
+			
+	// 	}
+	// }
 
 	public void AddPattern () {
 		if (currentSet != null && newPatternName.text != "") {

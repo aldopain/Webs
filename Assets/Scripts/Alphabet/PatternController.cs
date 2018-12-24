@@ -30,7 +30,8 @@ public class PatternController : MonoBehaviour {
 		}
 	}
 
-	public void Save () {
-
+	public void Clean () {
+		for (int i = 0; i < cellCount; i++)
+			cells[i].Select (false);
 	}
 }
