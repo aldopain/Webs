@@ -1,8 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Text.RegularExpressions;
 
 public class Parse : ScriptableObject {
+
+	static Regex regex = new Regex(@"[A-Za-z0-9]");
 
 	public static string PatternSetToString (PatternSet ps) {
 		string result = "";
@@ -37,5 +40,8 @@ public class Parse : ScriptableObject {
 			double.TryParse (s[i].ToString(), out result[i]);
 		return result;
 	}
-	
+
+	public static bool CheckString (string s) {
+		return regex.IsMatch(s) && s != "";
+	}
 }

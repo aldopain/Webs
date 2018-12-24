@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -31,8 +32,13 @@ public class PatternSet : ScriptableObject {
 
 	public List<double[]> Weight () {
 		var result = new List<double[]>();
-		foreach (var p in patterns)
-			result.Add (p.vector);
+		foreach (var p in patterns) {
+			var buf = new double[p.vector.Length];
+			Array.Copy (p.vector, buf, p.vector.Length);
+			for (int i = 0; i < buf.Length; i++)
+				buf[i] /= 2;
+			result.Add (buf);
+		}
 		return result;
 	}
 
@@ -41,5 +47,12 @@ public class PatternSet : ScriptableObject {
 				if (p.name.Equals(s)) return p;
 		}
 		return null;
+	}
+
+	public string[] GetNames () {
+		var alphabet = new string[patterns.Count];
+		for (int i = 0; i < patterns.Count; i++)
+			alphabet[i] = patterns[i].name;
+		return alphabet;
 	}
 }

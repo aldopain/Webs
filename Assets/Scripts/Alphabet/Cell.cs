@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class Cell : MonoBehaviour {
 	public bool isSelected = false;
 	Image img;
-	public string Name = "KEK";
 	
 	private void Start() {
 		img = GetComponent<Image>();

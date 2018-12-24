@@ -37,11 +37,14 @@ public class DatabaseManager {
 	}
 
     private void ExecuteCommand (string sqlQuery) {
-        CreateCommand (sqlQuery);
-        dbcmd.ExecuteNonQuery ();
-        DisposeCommand ();
+		try {
+			CreateCommand (sqlQuery);
+			dbcmd.ExecuteNonQuery ();
+			DisposeCommand ();
+		} catch (Exception e) {
+			Error.UnknowErrorMessage (e);
+		}
     }
-
 
 	private ArrayList Read () {
 		ArrayList result = new ArrayList();

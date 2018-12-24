@@ -25,9 +25,11 @@ public class PatternController : MonoBehaviour {
 	}
 
 	public void FromVector (double[] v) {
-		for (int i = 0; i < cellCount; i++) {
-			cells[i].Select (v[i] == 1);
-		}
+		if (v == null) Clean();
+		else
+			for (int i = 0; i < cellCount; i++) {
+				cells[i].Select (v[i] == 1);
+			}
 	}
 
 	public void Clean () {
