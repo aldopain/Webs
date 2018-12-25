@@ -1,81 +1,136 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+using System.Linq;
+using System.Text;
 
-public class Habb : ScriptableObject {
+public class Habb : MonoBehaviour {
 
-	string[] alphabet;
+	const int SCount = 36;
 	List<double[]> weight;
+	List<double> w0;
+	List<string> alphabet;
+	List<double[]> excersices;
 
-	public string Process(PatternSet ps, double[] S) {
-        
-		weight = ps.Weight();
-		alphabet = ps.GetNames();
-
-		double[] A;
-		double[] Z;
-		double[] Y;
-
-		Z = Z_process(S);
-		A = A_process(Z);
-		Y = Y_process(A);
-
-		for(int i=0;i<alphabet.Length; i++)
-			if (Y[i] == 1)
-				return alphabet[i];
-
-		return null;
-	}
-
-	private double[] Z_process( double[] S) {
-		double[] Z = new double[alphabet.Length];
-		for (int i = 0; i < alphabet.Length; i++) {
-			Z[i] = S.Length / 2.0;
-			for (int j = 0; j < S.Length; j++)
-				Z[i] += S[j] * weight[i][j];
+	public void Init (PatternSet ps)
+	{
+		// print ("started init");
+		alphabet = new List<string>();
+		weight = new List<double[]>();
+		excersices = new List<double[]>();
+		w0 = new List<double>();
+		// print ("wtf");
+		foreach (var v in ps.patterns) {
+			// print (v.name);
+			weight.Add (new double[SCount]);
+			alphabet.Add(v.name);
+			excersices.Add(v.BipolarVector());
+			w0.Add(0f);
+			// print (v.name);
+			TrainWeight(excersices.Last(), excersices.Count - 1);
+			// print (v.name);
+			Teach();
 		}
-		return Z;
 	}
 
-	private double[] A_process( double[] Z) {
-		double[] A = new double[alphabet.Length];
+	private void Teach() {
+		bool success = true;
+		int numb = 0;
+		int i = 0;
 
-		int count=0;
-		double eps = 0.001;
-		double e = 1.0 / alphabet.Length;
+		for (; i < excersices.Count && success; i++)
+		{
+			double[] y = new double[excersices.Count];
+			for (int j = 0; j < excersices.Count; j++)
+			{
+				y[j] = i == j ? 1 : -1;
+			}
+			if (!IsTeached(excersices[i],y))
+			{
+				numb = i;
+				success = false;
+			}
+		}
+		int iter = 0;
+		i = 0;
+		while (!success && iter < 100000) {
 
-		for (int i = 0; i < A.Length; i++)
-			A[i] = Z[i] / 10;
+			TrainWeight(excersices[numb], numb);
 
-		do {
-			double[] A_New = new double[alphabet.Length];
-			count = 0;
+			success = true;
 
-			for (int i = 0; i < A.Length; i++) {
-				double new_weight = A[i];
+			for (; i < excersices.Count && success; i++) {
+				double[] y = new double[excersices.Count];
+				for (int j = 0; j < excersices.Count; j++) {
+					y[j] = i == j ? 1 : -1;
+				}
+				if (!IsTeached(excersices[i], y))  {
+					numb = i;
+					success = false;
+				}
+			}
+			iter++;
+		}
+		print (iter);
+		if (iter == 100000) Error.TrainErrorMessage (alphabet[i]);
+	}
 
-				for (int j = 0; j < A.Length; j++)
-					if (i != j)
-						new_weight -= e * A[j];
-				if (new_weight < 0)
-					new_weight = 0;
+	private void TrainWeight(double[] x,int numb)
+	{
+		double[] y = new double[excersices.Count];
+		for (int i = 0; i < excersices.Count; i++) {
+			y[i] = i == numb ? 1 : -1;
+		}
 
-				A_New[i] = new_weight;
-				if (Mathf.Abs((float)(A_New[i] - A[i])) > eps)
-					count++;
+		for (int i = 0; i < weight.Count; i++) {
+			w0[i] += 1 * y[i];
+
+			for (int j = 0; j < SCount; j++) {
+				weight[i][j] += x[j] * y[i];
+			}
+		}
+	}
+
+	private bool IsTeached(double[] x, double[] t)
+	{
+		double[] y = new double[t.Length];
+		double S = 0;
+
+		for (int i = 0; i < excersices.Count; i++) {
+			S = w0[i];
+			for (int j = 0; j < SCount; j++) {
+				S += weight[i][j] * x[j];
 			}
 
-			A = A_New;
-			A_New = null;
+			y[i] = S > 0 ? 1 : -1;
 
-		} while (count > 0);
-		return A;
+			if (y[i] != t[i])
+				return false;
+		}
+		return true;
 	}
 
-	private double[] Y_process(double[] A) {
-		double[] Y = new double[alphabet.Length];
-		for(int i = 0; i < alphabet.Length; i++)
-			Y[i] = A[i] > 0 ? 1 : 0;
-		return Y;
+	public string Process(double[] x) //Распознавание изображения
+	{
+		double[] Neurons = new double[excersices.Count];
+		int answer=-1;
+
+		for(int i=0; i<excersices.Count; i++) {
+			Neurons[i] = w0[i];
+			for (int j = 0; j < x.Length; j++) {
+				Neurons[i] += weight[i][j] * x[j];
+			}
+			Neurons[i] = (Neurons[i] > 0) ? 1 : -1;
+		}
+
+		for (int i = 0; i < Neurons.Length; i++)
+			if (Neurons[i] > 0) {
+				if (answer < 0)
+					answer = i;
+				else return " ";
+			}
+
+		return answer < 0 ? " " : alphabet[answer];
 	}
 }

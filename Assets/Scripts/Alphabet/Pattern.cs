@@ -15,4 +15,11 @@ public class Pattern : ScriptableObject {
 		vector = v;
 	}
 
+	public double[] BipolarVector () {
+		var res = new double[vector.Length];
+		for (int i = 0; i < vector.Length; i++)
+			res[i] = vector[i] == 1 ? 1 : -1;
+		return res;
+	}
+
 }

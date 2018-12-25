@@ -20,4 +20,8 @@ public class Error : ScriptableObject {
 	public static void NoSetMessage () {
 		MessageBox.Show ("Please, create at least one set", "No set chosen");
 	}
+
+	public static void TrainErrorMessage (string name) {
+		MessageBox.Show ("Failed to train " + name, "Train error");
+	}
 }

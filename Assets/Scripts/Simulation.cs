@@ -15,6 +15,7 @@ public class Simulation : MonoBehaviour {
 	const string HAMMING_OPTION = "Hamming";
 
 	List<PatternSet> patternSets;
+	public Habb habb;
 
 	private void Start() {
 		algoChoser.ClearOptions();
@@ -33,14 +34,17 @@ public class Simulation : MonoBehaviour {
 	}
 
 	public void Process () {
+		print ("PROCESS STARTED");
 		double[] p = view.ToVector ();
 		var chosenSet = patternSets[setChoser.value];
 		switch (algoChoser.value) {
 			case HABB_CHOSEN:
-				print (new Habb().Process(chosenSet, p));
+				print ("HABB WAS CHOSEN");
+				habb.Init (chosenSet);
+				print (habb.Process(p));
 				break;
 			case HAMMING_CHOSEN:
-				// new Hamming().Process(chosenSet, p);
+				print (new Hamming().Process(chosenSet, p));
 				break;
 		}
 	}
